@@ -1,5 +1,6 @@
 #![allow(dead_code)]
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 use gdk_pixbuf::{InterpType, Pixbuf, PixbufLoader, PixbufLoaderExt};
 use gtk::{
@@ -10,6 +11,8 @@ use gtk::{
 use id3::Tag;
 
 use self::Visibility::*;
+use crate::player::Player;
+use crate::State;
 
 const THUMBNAIL_COLUMN: u32 = 0;
 const TITLE_COLUMN: u32 = 1;
@@ -28,6 +31,7 @@ const INTERP_HYPER: InterpType = InterpType::Hyper;
 
 pub struct Playlist {
     model: ListStore,
+    player: Player,
     treeview: TreeView,
 }
 
@@ -38,7 +42,7 @@ enum Visibility {
 }
 
 impl Playlist {
-    pub fn new() -> Self {
+    pub(crate) fn new(state: Arc<Mutex<State>>) -> Self {
         let model = ListStore::new(&[
             Pixbuf::static_type(),
             Type::String,
@@ -57,7 +61,11 @@ impl Playlist {
 
         Self::create_columns(&treeview);
 
-        Playlist { model, treeview }
+        Playlist {
+            model,
+            player: Player::new(state.clone()),
+            treeview,
+        }
     }
 
     fn create_columns(treeview: &TreeView) {
@@ -170,5 +178,23 @@ impl Playlist {
             return value.get::<Pixbuf>();
         }
         None
+    }
+
+    fn selected_path(&self) -> Option<String> {
+        let selection = self.treeview.get_selection();
+        if let Some((_, iter)) = selection.get_selected() {
+            let value = self.model.get_value(&iter, PATH_COLUMN as i32);
+            return value.get::<String>();
+        }
+        None
+    }
+
+    pub fn play(&self) -> bool {
+        if let Some(path) = self.selected_path() {
+            self.player.load(PathBuf::from(path));
+            true
+        } else {
+            false
+        }
     }
 }

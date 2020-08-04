@@ -116,6 +116,20 @@ impl App {
         self.toolbar.remove_button.connect_clicked(move |_| {
             playlist.remove_selection();
         });
+
+
+        // let playlist = self.playlist.clone();
+        // let play_image = self.toolbar.play_image.clone();
+        // let cover = self.cover.clone();
+        // let state = self.state.clone();
+
+        // self.toolbar.play_button.connect_clicked(move |_| {
+        //     if state.lock().unwrap().stopped {
+        //         if playlist.play() {
+        //             set
+        //         }
+        //     }
+        // });
     }
 }
 

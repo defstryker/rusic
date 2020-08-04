@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use std::env;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use gio::prelude::*;
 use gtk::prelude::*;
@@ -10,15 +11,22 @@ use gtk::{
     ScaleExt, WidgetExt, WindowPosition,
 };
 
+mod mp3;
+mod player;
 mod playlist;
 mod toolbar;
 use playlist::Playlist;
 use toolbar::MusicToolbar;
 
+struct State {
+    stopped: bool,
+}
+
 struct App {
     adjustment: Adjustment,
     cover: Image,
     playlist: Rc<Playlist>,
+    state: Arc<Mutex<State>>,
     toolbar: MusicToolbar,
     window: ApplicationWindow,
 }
@@ -36,7 +44,9 @@ impl App {
         let toolbar = MusicToolbar::new();
         vbox.add(toolbar.toolbar());
 
-        let playlist = Rc::new(Playlist::new());
+        let state = Arc::new(Mutex::new(State { stopped: true }));
+
+        let playlist = Rc::new(Playlist::new(state.clone()));
         vbox.add(playlist.view());
 
         let cover = Image::new();
@@ -54,6 +64,7 @@ impl App {
             adjustment,
             cover,
             playlist,
+            state,
             toolbar,
             window,
         };
@@ -68,7 +79,7 @@ impl App {
 
 fn main() {
     let application: Application =
-        Application::new(Some("com.github.rust-by-example"), Default::default())
+        Application::new(Some("rusic"), Default::default())
             .expect("Application initialization failed");
 
     application.connect_startup(|app| {

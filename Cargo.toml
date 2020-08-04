@@ -1,5 +1,5 @@
 [package]
-name = "rusic"
+name = "rustic"
 version = "0.1.0"
 authors = ["Abhi <avsv96@gmail.com>"]
 edition = "2018"
@@ -13,3 +13,9 @@ gtk-sys = "0.9.0"
 glib = "0.8.1"
 gdk-pixbuf = "0.7.0"
 id3 = "0.3.0"
+crossbeam = "0.7.2"
+crossbeam-queue = "0.1.2"
+# pulse-simple = "1.0.1"
+libpulse-binding = "2.11"
+libpulse-simple-binding = "2.11"
+simplemad = "0.9.0"
